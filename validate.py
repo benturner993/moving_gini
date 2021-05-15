@@ -1,16 +1,12 @@
-# backup
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_squared_log_error
 
 # TO DO: 
-# change colours of boxplots to match x-graphs, violin plots
+# change colours of boxplots to match x-graphs AND/OR alter plots for violin plots
 # add plotted gini curves
-# indicate winning model using pandas
-# change to df output or display output
-# add performance metrics such as MSE, RMSE, MAE during results section, perhaps in df with lowest score highlighted
+# change to df output and indicate winning model using pandas
 
 def gini_table(df, pred, act):
     
