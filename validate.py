@@ -87,13 +87,15 @@ def Average(lst):
 
     return sum(lst) / len(lst)
 
-def down_gini(df, pred, act, n):
+def down_gini(df, pred1, pred2, act, n):
 
     ''' function which creates n downsampled datasets and calculates original gini, average gini and 5%/95% confidence intervals 
         using a given input df, prediction and actual. '''
 
-    original_gini=round(gini_coef(df, pred, act),3)
-    ginis=[]
+    pred1_original_gini=round(gini_coef(df, pred1, act),3)
+    pred2_original_gini=round(gini_coef(df, pred2, act),3)
+    pred1_ginis=[]
+    pred2_ginis=[]
 
     for i in range(1, n):
             
@@ -101,22 +103,26 @@ def down_gini(df, pred, act, n):
         down_df=downsample_func(df)
         
         # calculate gini on sample
-        gini=gini_coef(down_df, pred, act)
-        ginis.append(gini)
+        pred1_gini=gini_coef(down_df, pred1, act)
+        pred2_gini=gini_coef(down_df, pred2, act)        
+        pred1_ginis.append(pred1_gini)
+        pred2_ginis.append(pred2_gini)
                     
     # convert list into an array
-    a=np.array(ginis)
-
+    pred1_a=np.array(pred1_ginis)
+    pred2_a=np.array(pred2_ginis)
+    
     # calculate gini and confidence intervals
-    #print('Original Gini:', original_gini)
-    p5 = round(np.percentile(a, 5),3)
-    #print('5%:', p5)
-    p50 = round(np.percentile(a, 50),3)
-    #print('50%:', p50)
-    p95 = round(np.percentile(a, 95),3)
-    #print('95%:', p95, '\n')
+    pred1_p5 = round(np.percentile(pred1_a, 5),3)
+    pred1_p50 = round(np.percentile(pred1_a, 50),3)
+    pred1_p95 = round(np.percentile(pred1_a, 95),3)
+    pred2_p5 = round(np.percentile(pred2_a, 5),3)
+    pred2_p50 = round(np.percentile(pred2_a, 50),3)
+    pred2_p95 = round(np.percentile(pred2_a, 95),3)
 
-    return original_gini, p5, p50, p95, ginis
+    
+    return pred1_original_gini, pred1_p5, pred1_p50, pred1_p95, pred1_ginis, \
+pred2_original_gini, pred2_p5, pred2_p50, pred2_p95, pred2_ginis
 
 def box_plot_gini(data, n):
 
@@ -320,26 +326,25 @@ def model_validation(df, pred1, pred2, act, unique_id, n=10):
     performance_metrics(df, pred1, pred2, act)
 
     # GINI
-    val1=down_gini(df, pred1, act, n)
-    val2=down_gini(df, pred2, act, n)
+    val1=down_gini(df, pred1, pred2, act, n)
 
     print(f'Pred 1 Gini for Original dataset: ', val1[0])
-    print(f'Pred 2 Gini for Original dataset: ', val2[0], '\n')
+    print(f'Pred 2 Gini for Original dataset: ', val1[5], '\n')
 
     print(f'Pred 1 5% CI Gini for {n} datasets: ', val1[1])
-    print(f'Pred 2 5% CI Gini for {n} datasets: ', val2[1], '\n')
+    print(f'Pred 2 5% CI Gini for {n} datasets: ', val1[6], '\n')
 
     print(f'Pred 1 Average Gini for {n} datasets: ', val1[2])
-    print(f'Pred 2 Average Gini for {n} datasets: ', val2[2], '\n')
+    print(f'Pred 2 Average Gini for {n} datasets: ', val1[7], '\n')
 
     print(f'Pred 1 95% CI Gini for {n} datasets: ', val1[3])
-    print(f'Pred 2 95% CI Gini for {n} datasets: ', val2[3], '\n')
+    print(f'Pred 2 95% CI Gini for {n} datasets: ', val1[8], '\n')
 
-    print('Pred 2 Model Improvement (on Original): ', round(((val2[0]/val1[0])-1)*100,2))
-    print(f'Pred 2 Model Improvement (over {n} iterations): ', round(((val2[2]/val1[2])-1)*100,2))
+    print('Pred 2 Model Improvement (on Original): ', round(((val1[5]/val1[0])-1)*100,2))
+    print(f'Pred 2 Model Improvement (over {n} iterations): ', round(((val1[7]/val1[2])-1)*100,2))
 
     # plot Gini
-    box_plot_gini([val1[4], val2[4]], n)
+    box_plot_gini([val1[4], val1[9]], n)
 
     # X-GRAPH
     pivot=create_xgraph_inputs(unique_id, pred2, pred1, act, df)
